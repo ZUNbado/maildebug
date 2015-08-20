@@ -113,3 +113,7 @@ for url in app.url_map.iter_rules():
 @app.route("/")
 def client():
     return render_template('index.html', urls = urls)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
+
