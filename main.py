@@ -14,13 +14,11 @@ def telnetCheck(host, port, session, timeout = 5):
         if not exit:
             (i,m,t) = tn.expect([line['expect']], timeout)
             text += t+'\r\n'
-            print t
             if not m: 
                 text += tn.read_eager()
                 exit = True
                 continue
             if 'send' in line:
-                print line['send']
                 text += line['send']+'\r\n'
                 tn.write(line['send'].encode('utf-8')+'\r\n')
     text += tn.read_eager()
@@ -57,7 +55,6 @@ def imap():
         port = int(values['port'])
         if server and port:
             telnet = telnetCheck(server, port, session)
-
     return render_template('form.html', session = telnet, fields = fields, urls = urls, current_url = request.url_rule.rule[1:])
 
 @app.route("/ftp", methods=['POST', 'GET'])
@@ -124,8 +121,6 @@ def smtp():
     telnet = ''
     if request.method == 'POST':
         (fields, values) = validate_form(fields, {})
-        print values
-
         session = [ 
                 { 'expect' : r'^220.*\r\n$', 'send' : 'EHLO %s' % values['ehlo'] },
                 ]
@@ -147,13 +142,11 @@ def smtp():
                 { 'expect' : r'^354 .*\r\n$', 'send' : '%s\r\n.' % values['data'] },
                 { 'expect' : r'^250 .*\r\n$' },
                 ] 
-        print session
         server = values['server']
         port = int(values['port'])
         if server and port:
             telnet = telnetCheck(server, port, session)
     return render_template('form.html', session = telnet, fields = fields, urls = urls, current_url = request.url_rule.rule[1:])
-
 
 @app.route("/")
 def client():
@@ -161,4 +154,3 @@ def client():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
-
