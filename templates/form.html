@@ -1,12 +1,21 @@
-{% extends "base.html" %}
+{% extends "index.html" %}
 {% block title %}SMTP Debug{% endblock %}
 {% block body %}
+<div name="form">
 <form class="pure-form pure-form-aligned" method="post">
     <fieldset>
             {% for field in fields %}
         <div class="pure-control-group">
                 <label for="{{ field.name }}">{{ field.label }}</label>
+                {% if field.choices is defined %}
+                <select name="{{ field.name }}">
+                        {% for option in field.choices %}
+                        <option {% if option == field.value %}selected {% endif %}value="{{ option }}">{{ option }}</option>
+                        {% endfor %}
+                </select>
+                {% else %}
                 <input id="{{ field.name }}" type="text" name="{{ field.name }}" placeholder="{{ field.label }}" {% if field.required == True %}required {% endif %}value="{{ field.value | default('') }}">
+                {% endif %}
         </div>
             {% endfor %}
 
@@ -15,7 +24,7 @@
         </div>
     </fieldset>
 </form>
-
+</div>
 <hr>
 {{ session|safe }}
 {% endblock %}
