@@ -3,7 +3,7 @@ import base64
 
 app = Flask(__name__)
 
-urls = [ 'imap', 'pop3', 'smtp' ]
+urls = [ 'imap', 'pop3', 'smtp', 'ftp' ]
 
 def telnetCheck(host, port, session, timeout = 5):
     import telnetlib
@@ -14,11 +14,13 @@ def telnetCheck(host, port, session, timeout = 5):
         if not exit:
             (i,m,t) = tn.expect([line['expect']], timeout)
             text += t+'\r\n'
+            print t
             if not m: 
                 text += tn.read_eager()
                 exit = True
                 continue
             if 'send' in line:
+                print line['send']
                 text += line['send']+'\r\n'
                 tn.write(line['send'].encode('utf-8')+'\r\n')
     text += tn.read_eager()
@@ -58,6 +60,28 @@ def imap():
 
     return render_template('form.html', session = telnet, fields = fields, urls = urls, current_url = request.url_rule.rule[1:])
 
+@app.route("/ftp", methods=['POST', 'GET'])
+def ftp():
+    fields = [
+            { 'name' : 'server', 'label' : 'Server', 'value' : '', 'required' : True },
+            { 'name' : 'port', 'label' : 'Port', 'value' : '', 'required' : True },
+            { 'name' : 'user', 'label' : 'Username', 'value' : '', 'required' : True },
+            { 'name' : 'passwd', 'label' : 'Password', 'value' : '', 'required' : True },
+            ]
+    telnet = ''
+    if request.method == 'POST':
+        (fields, values) = validate_form(fields, {})
+        session = [ 
+                { 'expect' : r'220 .*$', 'send' : 'USER %s' % values['user'] },
+                { 'expect' : r'331 .*$', 'send' : 'PASS %s' % values['passwd'] },
+                { 'expect' : r'230.*$', 'send' : 'LIST' },
+                { 'expect' : r'^.\r\n$' },
+                ]
+        server = values['server']
+        port = int(values['port'])
+        if server and port:
+            telnet = telnetCheck(server, port, session)
+    return render_template('form.html', session = telnet, fields = fields, urls = urls, current_url = request.url_rule.rule[1:])
 
 @app.route("/pop3", methods=['POST', 'GET'])
 def pop3():
