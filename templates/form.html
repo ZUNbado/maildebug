@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}SMTP Debug{% endblock %}
+{% block body %}
+<form class="pure-form pure-form-aligned" method="post">
+    <fieldset>
+            {% for field in fields %}
+        <div class="pure-control-group">
+                <label for="{{ field.name }}">{{ field.label }}</label>
+                <input id="{{ field.name }}" type="text" name="{{ field.name }}" placeholder="{{ field.label }}" {% if field.required == True %}required {% endif %}value="{{ field.value | default('') }}">
+        </div>
+            {% endfor %}
+
+        <div class="pure-controls">
+            <button type="submit" class="pure-button pure-button-primary">Submit</button>
+        </div>
+    </fieldset>
+</form>
+
+<hr>
+{{ session|safe }}
+{% endblock %}
